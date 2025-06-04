@@ -574,7 +574,45 @@ def main():
                         template="plotly_dark"
                     )
                     st.plotly_chart(fig, use_container_width=True)
-            
+
+
+
+                # Add this after the Diurnal Pattern plot in tab3
+                st.subheader("Energy Value Analysis")
+                
+                col1, col2 = st.columns(2)
+                with col1:
+                    # Simple Energy Value Calculation (assuming flat rate)
+                    electricity_price = 0.12  # $/kWh
+                    pred_df['Energy Value'] = pred_df['Predicted Power (kW)'] * electricity_price
+                    total_value = pred_df['Energy Value'].sum()
+                    
+                    fig = px.area(pred_df, x='Time', y='Energy Value',
+                                 title=f"Predicted Energy Value (${electricity_price}/kWh)",
+                                 template="plotly_dark")
+                    st.plotly_chart(fig, use_container_width=True)
+                    
+                    st.metric("Total Predicted Value", f"${total_value:,.2f}")
+                
+                with col2:
+                    # CO2 Savings Calculation (assuming 0.85 lbs CO2/kWh)
+                    co2_per_kwh = 0.85 / 2.20462  # kg CO2 per kWh
+                    pred_df['CO2 Savings'] = pred_df['Predicted Power (kW)'] * co2_per_kwh
+                    total_co2 = pred_df['CO2 Savings'].sum()
+                    
+                    fig = px.area(pred_df, x='Time', y='CO2 Savings',
+                                 title="Predicted CO2 Savings",
+                                 template="plotly_dark")
+                    st.plotly_chart(fig, use_container_width=True)
+                    
+                    st.metric("Total CO2 Avoided", f"{total_co2:,.1f} kg")
+                    st.markdown("""
+                    **Environmental Impact:**
+                    - Based on average grid emissions factor
+                    - 1 kWh wind energy ≈ 0.85 lbs CO2 avoided
+                    - Equivalent to planting ~{:,} trees
+                    """.format(int(total_co2/21.77)))  # ~21.77 kg CO2 per tree per year
+                            
             with tab4:
                 st.subheader("🔮 Advanced Prediction Analytics")
                 
